@@ -24,3 +24,5 @@ Route::post('tilda/invest', [SiteController::class, 'invest_tilda']);
 Route::post('tilda/apart', [SiteController::class, 'apart_tilda']);
 
 Route::post('tilda/invest/webinar', [SiteController::class, 'webinar_tilda']);
+
+Route::post('segment/hook', [SiteController::class, 'invest_tilda']);
