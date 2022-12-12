@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\SiteController;
+use App\Http\Controllers\Invest\SiteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,3 +20,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('tilda/invest', [SiteController::class, 'invest_tilda']);
+
+Route::post('tilda/apart', [SiteController::class, 'apart_tilda']);
+
+Route::post('tilda/invest/webinar', [SiteController::class, 'webinar_tilda']);

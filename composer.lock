@@ -4,8 +4,70 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "80c488e65c426c7c59415dd0f279b64e",
+    "content-hash": "c98c262ceb6e5438dabd14701cdcfef7",
     "packages": [
+        {
+            "name": "bloodlog/webinar-client",
+            "version": "1.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Bloodlog/webinar-client.git",
+                "reference": "670c24881ee816acd14c173d393a1d421055929d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Bloodlog/webinar-client/zipball/670c24881ee816acd14c173d393a1d421055929d",
+                "reference": "670c24881ee816acd14c173d393a1d421055929d",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "guzzlehttp/guzzle": "^6.2|^7.0.1",
+                "php": "^7.4|^8.0"
+            },
+            "require-dev": {
+                "orchestra/testbench": "6.*",
+                "phpunit/phpunit": "^8.4"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Bloodlog\\WebinarClient\\Providers\\WebinarClientProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Bloodlog\\WebinarClient\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Bloodlog",
+                    "email": "fm@web-fomin.ru",
+                    "homepage": "https://web-fomin.ru",
+                    "role": "Developer"
+                }
+            ],
+            "description": "PHP client for webinar.ru",
+            "homepage": "https://github.com/Bloodlog/webinar-client",
+            "keywords": [
+                "api",
+                "client",
+                "webinar",
+                "webinar.ru"
+            ],
+            "support": {
+                "issues": "https://github.com/Bloodlog/webinar-client/issues",
+                "source": "https://github.com/Bloodlog/webinar-client/issues"
+            },
+            "time": "2022-08-18T09:38:00+00:00"
+        },
         {
             "name": "brick/math",
             "version": "0.10.2",
