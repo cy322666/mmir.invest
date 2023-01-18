@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Invest\SiteController;
+
 use App\Http\Controllers\SegmentController;
 use App\Http\Controllers\ToolsController;
 use Illuminate\Http\Request;

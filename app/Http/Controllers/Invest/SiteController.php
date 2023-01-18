@@ -38,7 +38,6 @@ class SiteController extends Controller
             ->first()
         ))->init();
 
-        sleep(3);
     }
 
     public function invest_tilda(Request $request)
@@ -81,10 +80,6 @@ class SiteController extends Controller
                 ->contacts()
                 ->find($contact->id);
 
-            $contact = Contacts::update($contact, ['Телефоны' => [$phone]],
-//            'Ответственный' => ''
-            );
-
             $lead = Leads::create(
                 $contact,
                 ['status_id' => $statusId,],
@@ -92,6 +87,7 @@ class SiteController extends Controller
             );
 
             $lead->cf('Тип клиента')->setValue($request->who);
+
 //            $lead->cf('Город')->setValue($request->city);
             $lead->cf('Рекламный источник')->setValue('Сайт INVEST.MMIR');
 
@@ -226,6 +222,7 @@ class SiteController extends Controller
             ], $this->amoApi);
 
             if (!$contact)
+
                 $contact = Contacts::create($this->amoApi, $name);
 
             sleep(1);
@@ -255,7 +252,7 @@ class SiteController extends Controller
             $lead->cf('utm_medium')->setValue($model->utm_medium);
             $lead->cf('utm_content')->setValue($model->utm_content);
             $lead->cf('utm_campaign')->setValue($model->utm_campaign);
-
+            
             $lead->attachTags(['tilda','free-12-2022']);
             $lead->save();
 

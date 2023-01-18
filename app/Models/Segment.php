@@ -10,6 +10,7 @@ class Segment extends Model
     use HasFactory;
 
     protected $fillable = [
+<<<<<<< HEAD
       'lead_id',
       'contact_id',
       'count_leads',
@@ -28,5 +29,18 @@ class Segment extends Model
 
        'count_success_invest',
        'count_success_apart',
+=======
+        'lead_id',
+        'contact_id',
+        'sale',
+        'sale_invest',
+        'sale_apart',
+        'count_leads',
+        'is_double',
+        'link_double_phone',
+        'link_double_email',
+        'count_leads_invest',
+        'count_leads_apart',
+>>>>>>> 0d6e2bb8226702340a33516e15cbf9f080bfd1bd
     ];
 }
