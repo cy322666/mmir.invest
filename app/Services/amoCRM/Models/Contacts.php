@@ -12,25 +12,30 @@ abstract class Contacts extends Client
 
         if(key_exists('Телефоны', $arrayFields)) {
 
-            foreach ($arrayFields['Телефоны'] as $phone) {
-
-                $contacts = $client->service
-                    ->contacts()
-                    ->searchByPhone(substr($phone, -10));
-            }
-        }
-
-        if($contacts == null && key_exists('Почта', $arrayFields)) {
+//            foreach ($arrayFields['Телефоны'] as $phone) {
 
             $contacts = $client->service
                 ->contacts()
-                ->searchByEmail($arrayFields['Почта']);
+                ->searchByPhone(self::clearPhone($arrayFields['Телефоны'][0]));
+
+//            }
         }
 
-        if($contacts !== null && $contacts->first())
+        if ($contacts == null || $contacts->first() == null) {
+
+            if(key_exists('Почта', $arrayFields)) {
+
+                $contacts = $client->service
+                    ->contacts()
+                    ->searchByEmail($arrayFields['Почта']);
+            }
+        }
+
+        if ($contacts !== null && $contacts->first() !== null) {
             return $contacts->first();
-        else
-            return null;
+        }
+
+        return null;
     }
 
     public static function update($contact, $arrayFields = [])
@@ -101,7 +106,7 @@ abstract class Contacts extends Client
     {
         if ($phone) {
 
-            return str_replace([',', '(', ')', '-', '+'],'', $phone);
+            return substr(str_replace([',', '(', ')', '-', '+', ' '],'', $phone), -10);
         } else
             return null;
     }
