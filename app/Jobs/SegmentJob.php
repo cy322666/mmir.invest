@@ -33,9 +33,11 @@ class SegmentJob implements ShouldQueue
 
     public function handle()
     {
-        $this->amoApi = (new Client(Account::query()
-            ->where('subdomain', 'mmirinvest')
-            ->first()
+        try {
+        $this->amoApi = (new Client(
+            Account::query()
+                ->where('subdomain', 'mmirinvest')
+                ->first()
         ))->init();
 
         $isDouble = false;
@@ -46,17 +48,16 @@ class SegmentJob implements ShouldQueue
             ->find($this->segment->lead_id);
 
         if ($lead->contact !== null) {
-
             $leadsArray = [
                 static::$investPipelineId => [
-                    'count_active'  => 0,
-                    'count_lost'    => 0,
+                    'count_active' => 0,
+                    'count_lost' => 0,
                     'count_success' => 0,
                     'sale' => 0,
                 ],
                 static::$apartPipelineId => [
-                    'count_active'  => 0,
-                    'count_lost'    => 0,
+                    'count_active' => 0,
+                    'count_lost' => 0,
                     'count_success' => 0,
                     'sale' => 0,
                 ],
@@ -65,38 +66,42 @@ class SegmentJob implements ShouldQueue
             $contact = $lead->contact;
 
             foreach ($contact->leads->toArray() as $lead) {
+                if ($lead['pipeline_id'] !== static::$apartPipelineId && $lead['pipeline_id'] !== static::$investPipelineId) {
+                    continue;
+                }
 
-                if ($lead['pipeline_id'] !== static::$apartPipelineId && $lead['pipeline_id'] !== static::$investPipelineId) continue;
-
-                $leadsArray[$lead['pipeline_id']]['count_active']  += $lead['status_id'] != 142 && $lead['status_id'] != 143 ? 1 : 0;
-                $leadsArray[$lead['pipeline_id']]['count_lost']    += $lead['status_id'] == 143 ? 1 : 0;
+                $leadsArray[$lead['pipeline_id']]['count_active'] += $lead['status_id'] != 142 && $lead['status_id'] != 143 ? 1 : 0;
+                $leadsArray[$lead['pipeline_id']]['count_lost'] += $lead['status_id'] == 143 ? 1 : 0;
                 $leadsArray[$lead['pipeline_id']]['count_success'] += $lead['status_id'] == 142 ? 1 : 0;
 
                 $leadsArray[$lead['pipeline_id']]['sale'] += $lead['status_id'] == 142 ? $lead['sale'] : 0;
             }
         }
 
-        $segment = Segment::query()->firstOrCreate([
-            'contact_id' => $contact->id ?? null],
+        $segment = Segment::query()->firstOrCreate(
+            [
+                'contact_id' => $contact->id ?? null
+            ],
             [
                 'contact_id' => $contact->id ?? null,
-                'lead_id'    => $lead['id']
-            ]);
+                'lead_id' => $lead['id']
+            ]
+        );
 
         $segment->fill([
             'contact_id' => $contact->id ?? null,
             'count_leads' => !empty($contact) ? count($contact->leads->toArray()) : 1,
             'sale_invest' => $leadsArray[static::$investPipelineId]['sale'],
-            'sale_apart'  => $leadsArray[static::$apartPipelineId]['sale'],
+            'sale_apart' => $leadsArray[static::$apartPipelineId]['sale'],
             'sale' => $leadsArray[static::$investPipelineId]['sale'] + $leadsArray[static::$apartPipelineId]['sale'],
             'count_lost_invest' => $leadsArray[static::$investPipelineId]['count_lost'],
-            'count_lost_apart'  => $leadsArray[static::$apartPipelineId]['count_lost'],
-            'count_leads_invest'  => $leadsArray[static::$investPipelineId]['count_success'] +  $leadsArray[static::$investPipelineId]['count_lost'] + $leadsArray[static::$investPipelineId]['count_active'],
-            'count_leads_apart'   => $leadsArray[static::$apartPipelineId]['count_success'] +  $leadsArray[static::$apartPipelineId]['count_lost'] + $leadsArray[static::$apartPipelineId]['count_active'],
+            'count_lost_apart' => $leadsArray[static::$apartPipelineId]['count_lost'],
+            'count_leads_invest' => $leadsArray[static::$investPipelineId]['count_success'] + $leadsArray[static::$investPipelineId]['count_lost'] + $leadsArray[static::$investPipelineId]['count_active'],
+            'count_leads_apart' => $leadsArray[static::$apartPipelineId]['count_success'] + $leadsArray[static::$apartPipelineId]['count_lost'] + $leadsArray[static::$apartPipelineId]['count_active'],
             'count_active_invest' => $leadsArray[static::$investPipelineId]['count_active'],
-            'count_active_apart'  => $leadsArray[static::$apartPipelineId]['count_active'],
+            'count_active_apart' => $leadsArray[static::$apartPipelineId]['count_active'],
             'count_success_invest' => $leadsArray[static::$investPipelineId]['count_success'],
-            'count_success_apart'  => $leadsArray[static::$apartPipelineId]['count_success'],
+            'count_success_apart' => $leadsArray[static::$apartPipelineId]['count_success'],
         ]);
         $segment->save();
 
@@ -123,7 +128,6 @@ class SegmentJob implements ShouldQueue
         $email = $contact->cf('Email')->getValue();
 
         if ($phone) {
-
             $phone = Contacts::clearPhone($phone);
 
             $contacts = $this->amoApi
@@ -132,39 +136,35 @@ class SegmentJob implements ShouldQueue
                 ->searchByPhone($phone);
 
             if ($contacts->count() > 1) {
-
                 $isDouble = true;
-                $linkDoublePhone = 'https://mmirinvest.amocrm.ru/contacts/list/contacts/?term='.$phone;
+                $linkDoublePhone = 'https://mmirinvest.amocrm.ru/contacts/list/contacts/?term=' . $phone;
             }
         }
 
         if ($email) {
-
             $contacts = $this->amoApi
                 ->service
                 ->contacts()
                 ->searchByEmail($email);
 
             if ($contacts->count() > 1) {
-
                 $isDouble = true;
-                $linkDoubleEmail = 'https://mmirinvest.amocrm.ru/contacts/list/contacts/?term='.$email;
+                $linkDoubleEmail = 'https://mmirinvest.amocrm.ru/contacts/list/contacts/?term=' . $email;
             }
         }
 
         if ($isDouble) {
-
             $textArrayDouble = static::buildTextDouble($isDouble, [
                 'phone' => $linkDoublePhone ?? null,
                 'email' => $linkDoubleEmail ?? null,
             ]);
 
             $doubleText = implode("\n", $textArrayDouble);
-        } else
+        } else {
             $doubleText = implode("\n", ['Дублей не найдено']);
+        }
 
         if ($segment) {
-
             $segment->is_double = $isDouble ?? false;
             $segment->link_double_phone = $linkDoublePhone ?? null;
             $segment->link_double_email = $linkDoubleEmail ?? null;
@@ -173,22 +173,19 @@ class SegmentJob implements ShouldQueue
             $arrayText = [
                 'Информация по клиенту :',
                 '-----------------------',
-                'Услуг приобретено на сумму : '.$segment->sale,
-                'Всего сделок : '.$segment->count_leads,
+                'Услуг приобретено на сумму : ' . $segment->sale,
+                'Всего сделок : ' . $segment->count_leads,
             ];
 
             if ($segment->sale_invest > 1) {
-
                 $lead->attachTag('пайщик');
                 $lead->save();
             }
 
             if ($lead->pipeline_id == static::$investPipelineId) {
-
                 $textPipeline = static::buildTextInvest($segment);
             }
             if ($lead->pipeline_id == static::$apartPipelineId) {
-
                 $textPipeline = static::buildTextApart($segment);
             }
 
@@ -206,6 +203,11 @@ class SegmentJob implements ShouldQueue
         $note->element_type = 2;
         $note->element_id = $lead->id;
         $note->save();
+
+        } catch (\Throwable $exception) {
+
+            \App\Services\Telegram\Telegram::send('Партнеры компании', $exception->getMessage());
+        }
     }
 
     private static function buildTextDouble(bool|null $isDouble, array $arrayLinks) : array

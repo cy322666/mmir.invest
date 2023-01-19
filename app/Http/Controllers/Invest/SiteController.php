@@ -42,8 +42,8 @@ class SiteController extends Controller
 
     public function invest_tilda(Request $request)
     {
-        $name  = $request->Name;
-        $phone = $request->Phone;
+        $name  = $request->Name ?? $request->name;
+        $phone = $request->Phone ?? $request->phone;
 
         $statusId = 53290586;
 
@@ -86,7 +86,15 @@ class SiteController extends Controller
                 $request->formname,
             );
 
-            $lead->cf('Тип клиента')->setValue($request->who);
+            sleep(1);
+
+            $lead = $this->amoApi
+                ->service
+                ->leads()
+                ->find($lead->id);
+
+            if ($request->who)
+                $lead->cf('Тип клиента')->setValue($request->who);
 
 //            $lead->cf('Город')->setValue($request->city);
             $lead->cf('Рекламный источник')->setValue('Сайт INVEST.MMIR');
@@ -97,6 +105,10 @@ class SiteController extends Controller
             $lead->cf('utm_content')->setValue($model->utm_content);
             $lead->cf('utm_campaign')->setValue($model->utm_campaign);
 
+            if ($request->tag) {
+
+                $lead->attachTag($request->tag);
+            }
             $lead->attachTag('tilda');
             $lead->save();
 
@@ -110,13 +122,15 @@ class SiteController extends Controller
 
             $model->error = $exception->getMessage().' '.$exception->getFile().' '.$exception->getLine();
             $model->save();
+
+            \App\Services\Telegram::send('Сайт Инвестиции', $model->error);
         }
     }
 
     public function apart_tilda(Request $request)
     {
-        $name  = $request->name;
-        $phone = $request->phone;
+        $name  = $request->Name ?? $request->name;
+        $phone = $request->Phone ?? $request->phone;
 
         $statusId = 53274922;
 
@@ -145,12 +159,12 @@ class SiteController extends Controller
             if (!$contact)
                 $contact = Contacts::create($this->amoApi, $name);
 
-            sleep(1);
-
             $contact = $this->amoApi
                 ->service
                 ->contacts()
                 ->find($contact->id);
+
+            sleep(1);
 
             $contact = Contacts::update($contact, ['Телефоны' => [$phone]],
 //            'Ответственный' => ''
@@ -162,6 +176,13 @@ class SiteController extends Controller
                 $request->formname,
             );
 
+            sleep(1);
+
+            $lead = $this->amoApi
+                ->service
+                ->leads()
+                ->find($lead->id);
+
             $lead->cf('Рекламный источник')->setValue('Сайт INVESTCLUB.MMIR');
 
             $lead->cf('utm_term')->setValue($model->utm_term);
@@ -170,6 +191,10 @@ class SiteController extends Controller
             $lead->cf('utm_content')->setValue($model->utm_content);
             $lead->cf('utm_campaign')->setValue($model->utm_campaign);
 
+            if ($request->tag) {
+
+                $lead->attachTag($request->tag);
+            }
             $lead->attachTag('tilda');
             $lead->save();
 
@@ -183,14 +208,16 @@ class SiteController extends Controller
 
             $model->error = $exception->getMessage().' '.$exception->getFile().' '.$exception->getLine();
             $model->save();
+
+            \App\Services\Telegram::send('Сайт Апартамент', $model->error);
         }
     }
 
     public function webinar_tilda(Request $request)
     {
-        $phone = $request->phone;
-        $name  = $request->name;
-        $email = $request->email;
+        $name  = $request->Name ?? $request->name;
+        $phone = $request->Phone ?? $request->phone;
+        $email = $request->Email ?? $request->email;
 
         $statusId = 53289854;
 
@@ -225,8 +252,6 @@ class SiteController extends Controller
 
                 $contact = Contacts::create($this->amoApi, $name);
 
-            sleep(1);
-
             $contact = $this->amoApi
                 ->service
                 ->contacts()
@@ -245,6 +270,13 @@ class SiteController extends Controller
                 $request->formname,
             );
 
+            sleep(1);
+
+            $lead = $this->amoApi
+                ->service
+                ->leads()
+                ->find($lead->id);
+
             $lead->cf('Рекламный источник')->setValue('Сайт INVESTCLUB.MMIR');
 
             $lead->cf('utm_term')->setValue($model->utm_term);
@@ -252,7 +284,11 @@ class SiteController extends Controller
             $lead->cf('utm_medium')->setValue($model->utm_medium);
             $lead->cf('utm_content')->setValue($model->utm_content);
             $lead->cf('utm_campaign')->setValue($model->utm_campaign);
-            
+
+            if ($request->tag) {
+
+                $lead->attachTag($request->tag);
+            }
             $lead->attachTags(['tilda','free-12-2022']);
             $lead->save();
 
@@ -266,6 +302,8 @@ class SiteController extends Controller
 
             $model->error = $exception->getMessage().' '.$exception->getFile().' '.$exception->getLine();
             $model->save();
+
+            \App\Services\Telegram::send('Сайт Вебинары', $model->error);
         }
     }
 
